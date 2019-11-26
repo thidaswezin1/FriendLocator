@@ -197,10 +197,12 @@ public class SignUpActivity extends AppCompatActivity {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BitmapDrawable imagedrawable = (BitmapDrawable) image.getDrawable();
         Bitmap imagebitmap = imagedrawable.getBitmap();
-        imagebitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+        imagebitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
         byte[] imageBytes = baos.toByteArray();
         String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        imageString = "data:image/jpg;base64," + imageString;
+        //imageString = "data:image/jpg;base64," + imageString;
+
+
 
         //create User
         User user = new User();

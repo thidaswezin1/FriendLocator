@@ -1,8 +1,11 @@
 package com.thida.friendlocator;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     View emailView,passwordView;
     ProgressBar progressBar;
-    String latitude,longitude;
+    String latitude,longitude,image,name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,10 +109,22 @@ public class LoginActivity extends AppCompatActivity {
                getLocation();
                dataSnapshot.getRef().child("latitude").setValue(latitude);
                dataSnapshot.getRef().child("longitude").setValue(longitude);
+               name = String.valueOf(dataSnapshot.child("name").getValue());
+              image = String.valueOf(dataSnapshot.child("image").getValue());
+
+              byte[] decodedString = Base64.decode(image, Base64.DEFAULT);
+
 
                Log.e("location ",latitude+":"+longitude);
+               Log.e("Name ",name);
                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+               intent.putExtra("UserName",name);
+               intent.putExtra("Email",email.getText().toString());
+               intent.putExtra("Password",password.getText().toString());
+               intent.putExtra("Bitmap",decodedString);
+
                startActivity(intent);
                finish();
 
@@ -139,8 +154,10 @@ public class LoginActivity extends AppCompatActivity {
 
     private void getLocation(){
         GetCurrentLocation location = new GetCurrentLocation(this);
-        latitude = String.valueOf(location.getLatitude());
-        longitude = String.valueOf(location.getLongitude());
+        if(location.canGetLocation) {
+            latitude = String.valueOf(location.getLatitude());
+            longitude = String.valueOf(location.getLongitude());
+        }
     }
 
 }
