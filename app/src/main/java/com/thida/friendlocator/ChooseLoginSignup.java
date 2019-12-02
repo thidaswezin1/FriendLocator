@@ -3,11 +3,11 @@ package com.thida.friendlocator;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -37,10 +37,12 @@ public class ChooseLoginSignup extends AppCompatActivity {
         btnSignUp = findViewById(R.id.signup);
         layout = findViewById(R.id.linearLayout);
         btnLogin.setOnClickListener(view -> {
+            btnLogin.setBackgroundColor(Color.parseColor("#D6DBDF"));
             Intent intent = new Intent(ChooseLoginSignup.this,LoginActivity.class);
             startActivity(intent);
         });
         btnSignUp.setOnClickListener(view -> {
+            btnSignUp.setBackgroundColor(Color.parseColor("#D6DBDF"));
             Intent intent = new Intent(ChooseLoginSignup.this,SignUpActivity.class);
             startActivity(intent);
         });
