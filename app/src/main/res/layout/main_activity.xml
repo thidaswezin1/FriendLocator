@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text = "Your Friends"
-                android:textSize="30sp"/>
+                android:textSize="20sp"/>
             <androidx.cardview.widget.CardView
                 android:id = "@+id/cardView"
                 app:cardCornerRadius="6dp"

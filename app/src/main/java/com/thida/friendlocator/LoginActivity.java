@@ -73,8 +73,9 @@ public class LoginActivity extends AppCompatActivity {
                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                            @Override
                            public void onComplete(@NonNull Task<AuthResult> task) {
-                               progressBar.setVisibility(View.GONE);
+
                                if (!task.isSuccessful()) {
+                                   progressBar.setVisibility(View.GONE);
                                    Toast.makeText(LoginActivity.this, "Login Fail!\nCheck your email or password", Toast.LENGTH_LONG).show();
                                } else {
                                    updateData();
@@ -105,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                progressBar.setVisibility(View.GONE);
                getLocation();
                dataSnapshot.getRef().child("latitude").setValue(latitude);
                dataSnapshot.getRef().child("longitude").setValue(longitude);

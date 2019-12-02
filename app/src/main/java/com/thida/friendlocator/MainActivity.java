@@ -209,8 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.pwd_change:
                     textViewFriend.setVisibility(View.GONE);
                     cardView.setVisibility(View.GONE);
-                    fragmentClass = ChangePassordFragment.class;
-                    fragment = (Fragment) fragmentClass.newInstance();
+                    fragment = ChangePassordFragment.newInstance(email,password);
                     break;
                 case R.id.find_friends:
                     textViewFriend.setVisibility(View.GONE);
