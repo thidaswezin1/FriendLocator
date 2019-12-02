@@ -1,9 +1,11 @@
 package com.thida.friendlocator;
 
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -12,9 +14,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -23,11 +25,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.thida.friendlocator.ui.User;
-
-import java.util.HashMap;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,7 +33,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class LoginActivity extends AppCompatActivity {
     EditText email,password;
     Button btnLogin;
-    View emailView,passwordView;
+    View emailView,passwordView,layout;
     ProgressBar progressBar;
     String latitude,longitude,image,name;
 
@@ -47,6 +44,18 @@ public class LoginActivity extends AppCompatActivity {
         initialize();
         FirebaseAuth auth = FirebaseAuth.getInstance();
         btnLogin.setOnClickListener(view -> {
+            if(!haveNetworkConnection()){
+                //Toast.makeText(getApplicationContext(),"Internet Connection is required.",Toast.LENGTH_LONG).show();
+                Snackbar.make(layout,"Internet Connection is required.",Snackbar.LENGTH_LONG)
+                        .setAction("OK", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+                                startActivity(intent);
+                            }
+                        }).show();
+            }
+            else{
            /* FirebaseDatabase firebaseDatabase= FirebaseDatabase.getInstance();
             DatabaseReference ref =firebaseDatabase.getReference("users");
 
@@ -89,10 +98,29 @@ public class LoginActivity extends AppCompatActivity {
 
            }
 
-        });
+        }});
+
+    }
+
+    private boolean haveNetworkConnection() {
+        boolean haveConnectedWifi = false;
+        boolean haveConnectedMobile = false;
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo[] netInfo = cm.getAllNetworkInfo();
+        for (NetworkInfo ni : netInfo) {
+            if (ni.getTypeName().equalsIgnoreCase("WIFI"))
+                if (ni.isConnected())
+                    haveConnectedWifi = true;
+            if (ni.getTypeName().equalsIgnoreCase("MOBILE"))
+                if (ni.isConnected())
+                    haveConnectedMobile = true;
+        }
+        return haveConnectedWifi || haveConnectedMobile;
     }
 
     private void initialize(){
+        layout = findViewById(R.id.layout);
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
         btnLogin = findViewById(R.id.btn_login);
