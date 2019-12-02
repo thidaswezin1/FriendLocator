@@ -5,26 +5,30 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/home"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/menu_home"/>
+        <item
             android:id="@+id/photo_change"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Change Photo" />
+            android:title="@string/menu_change_photo" />
         <item
             android:id="@+id/pwd_change"
             android:icon="@drawable/ic_mode_edit_black_24dp"
-            android:title="Change Password" />
+            android:title="@string/menu_change_password" />
         <item
             android:id="@+id/logout"
             android:icon="@drawable/ic_lock_outline_black_24dp"
-            android:title="Logout" />
+            android:title="@string/menu_logout" />
 
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/communicate">
         <menu>
             <item
                 android:id="@+id/find_friends"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Find Friends" />
+                android:title="@string/menu_find_friends" />
         </menu>
     </item>
 

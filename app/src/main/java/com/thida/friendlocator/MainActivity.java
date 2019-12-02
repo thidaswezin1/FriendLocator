@@ -35,6 +35,7 @@ import com.thida.friendlocator.ui.home.HomeFragment;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.Menu;
 import android.widget.ImageView;
@@ -55,9 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
     private Toolbar toolbar;
     private NavigationView nvDrawer;
-    private CardView cardView;
-    private ProgressDialog dialog;
-    private TextView textViewFriend;
+
     private SwipeRefreshLayout refreshLayout;
     Bitmap decodedByte;
 
@@ -68,88 +67,43 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-        textViewFriend = findViewById(R.id.textFriend);
+
         refreshLayout = findViewById(R.id.swipeToRefresh);
 
         carryData();
 
-        SliderView sliderView = findViewById(R.id.imageSlider);
-        cardView = findViewById(R.id.cardView);
 
-        dialog = new ProgressDialog(this);
-        dialog.show();
+        /*for navigation drawer*/
 
-        FirebaseDatabase firebaseDatabase= FirebaseDatabase.getInstance();
-        DatabaseReference ref =firebaseDatabase.getReference("users");
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                dialog.dismiss();
-                for (DataSnapshot userDataSnapshot : dataSnapshot.getChildren()) {
-                    User user = userDataSnapshot.getValue(User.class);
-                    if(!user.getEmail().equals(email)) {
-                        SliderViewItem item = new SliderViewItem();
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-                        byte[] decodedString = Base64.decode(user.getImage(), Base64.DEFAULT);
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        mDrawer = findViewById(R.id.drawer_layout);
+        nvDrawer = findViewById(R.id.nav_view);
 
-                        item.setImage(bitmap);
-                        item.setUserName(user.getName());
+        drawerToggle = setupDrawerToggle();
 
-                        allItems.add(item);
-                    }
-                }
-                SliderAdapter adapter = new SliderAdapter(allItems);
-                sliderView.setSliderAdapter(adapter);
+        // Setup toggle to display hamburger icon with nice animation
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerToggle.syncState();
+        // Tie DrawerLayout events to the ActionBarToggle
+        mDrawer.addDrawerListener(drawerToggle);
 
-                sliderView.setIndicatorAnimation(IndicatorAnimations.WORM); //set indicator animation by using SliderLayout.IndicatorAnimations. :WORM or THIN_WORM or COLOR or DROP or FILL or NONE or SCALE or SCALE_DOWN or SLIDE and SWAP!!
-                sliderView.setSliderTransformAnimation(SliderAnimations.CUBEINROTATIONTRANSFORMATION);
-                sliderView.setAutoCycleDirection(SliderView.AUTO_CYCLE_DIRECTION_BACK_AND_FORTH);
-                sliderView.setIndicatorSelectedColor(Color.BLUE);
-                sliderView.setIndicatorUnselectedColor(Color.CYAN);
-                sliderView.setScrollTimeInSec(3);
-                sliderView.startAutoCycle();
-
-               /* sliderView.setOnIndicatorClickListener(new DrawController.ClickListener() {
-                    @Override
-                    public void onIndicatorClicked(int position) {
-                        sliderView.setCurrentPagePosition(position);
-                    }
-                });*/
+        nvDrawer.getMenu().getItem(0).setChecked(true);
 
 
+        View headerView = nvDrawer.getHeaderView(0);
+        userImage = headerView.findViewById(R.id.imageView);
+        userName = headerView.findViewById(R.id.user_name);
+        userName.setText(name);
 
-                /*for navigation drawer*/
+        decodedByte = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+        userImage.setImageBitmap(decodedByte);
 
-                toolbar = findViewById(R.id.toolbar);
-                setSupportActionBar(toolbar);
-                //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setUpDrawerContent(nvDrawer);
 
-                mDrawer = findViewById(R.id.drawer_layout);
-                nvDrawer = findViewById(R.id.nav_view);
-
-                drawerToggle = setupDrawerToggle();
-
-                // Setup toggle to display hamburger icon with nice animation
-                drawerToggle.setDrawerIndicatorEnabled(true);
-                drawerToggle.syncState();
-                // Tie DrawerLayout events to the ActionBarToggle
-                mDrawer.addDrawerListener(drawerToggle);
-
-                // Passing each menu ID as a set of Ids because each
-                // menu should be considered as top level destinations.
-
-                View headerView = nvDrawer.getHeaderView(0);
-                userImage = headerView.findViewById(R.id.imageView);
-                userName = headerView.findViewById(R.id.user_name);
-                userName.setText(name);
-
-                decodedByte = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
-                userImage.setImageBitmap(decodedByte);
-
-                setUpDrawerContent(nvDrawer);
-
-                refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                     @Override
                     public void onRefresh() {
 
@@ -191,18 +145,9 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-
+                loadFragment(HomeFragment.newInstance(email));
+                setTitle("Home");
+    }
 
 
        /* mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -213,8 +158,10 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);*/
 
-
-
+    public void loadFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, fragment);
+        transaction.commit();
     }
 
     private ActionBarDrawerToggle setupDrawerToggle() {
@@ -230,34 +177,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectDrawerItem(MenuItem menuItem) {
         Fragment fragment=null;
-        Class fragmentClass;
         try {
             switch (menuItem.getItemId()) {
+                case R.id.home:
+                    fragment = HomeFragment.newInstance(email);
+                    break;
                 case R.id.pwd_change:
-                    textViewFriend.setVisibility(View.GONE);
-                    cardView.setVisibility(View.GONE);
                     fragment = ChangePassordFragment.newInstance(email,password);
                     break;
                 case R.id.find_friends:
-                    textViewFriend.setVisibility(View.GONE);
-                    cardView.setVisibility(View.GONE);
                     fragment =  FindFriendFragment.newInstance(email);
                     break;
                 case R.id.photo_change:
-                    textViewFriend.setVisibility(View.GONE);
-                    cardView.setVisibility(View.GONE);
                     fragment = ChangePhotoFragment.newInstance(email);
                     break;
                 case R.id.logout:
                     Intent intent = new Intent(MainActivity.this,LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                default:
-                    textViewFriend.setVisibility(View.GONE);
-                    cardView.setVisibility(View.GONE);
-                    fragmentClass = HomeFragment.class;
-                    fragment = (Fragment) fragmentClass.newInstance();
-
+                    break;
             }
         }
        catch (Exception e) {

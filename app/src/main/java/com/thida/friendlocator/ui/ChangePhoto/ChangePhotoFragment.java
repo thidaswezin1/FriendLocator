@@ -28,7 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class ChangePhotoFragment extends Fragment {
-    private ImageView image,imageUnuse;
+    private ImageView image;
      public static ChangePhotoFragment newInstance(String email) {
 
          Bundle args = new Bundle();
@@ -49,7 +49,6 @@ public class ChangePhotoFragment extends Fragment {
         Button changePhoto = root.findViewById(R.id.change_photo);
         Button browsePhoto = root.findViewById(R.id.browse);
         image = root.findViewById(R.id.user_image);
-        imageUnuse = root.findViewById(R.id.browse_image);
 
         browsePhoto.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -114,7 +113,6 @@ public class ChangePhotoFragment extends Fragment {
         if(requestCode == 1 && resultCode == getActivity().RESULT_OK){
             Uri selectedImage = data.getData();
             image.setImageURI(selectedImage);
-            imageUnuse.setVisibility(View.GONE);
         }
     }
 }
