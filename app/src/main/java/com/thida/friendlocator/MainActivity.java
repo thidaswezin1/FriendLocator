@@ -2,30 +2,20 @@ package com.thida.friendlocator;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import android.util.Base64;
 import android.view.MenuItem;
 import android.view.View;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -35,23 +25,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.smarteist.autoimageslider.IndicatorAnimations;
-import com.smarteist.autoimageslider.IndicatorView.draw.controller.DrawController;
 import com.smarteist.autoimageslider.SliderAnimations;
 import com.smarteist.autoimageslider.SliderView;
 import com.thida.friendlocator.ui.ChangePassword.ChangePassordFragment;
+import com.thida.friendlocator.ui.ChangePhoto.ChangePhotoFragment;
 import com.thida.friendlocator.ui.FindFriend.FindFriendFragment;
 import com.thida.friendlocator.ui.User;
 import com.thida.friendlocator.ui.home.HomeFragment;
-
 import androidx.drawerlayout.widget.DrawerLayout;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private CardView cardView;
     private ProgressDialog dialog;
     private TextView textViewFriend;
+    private SwipeRefreshLayout refreshLayout;
+    Bitmap decodedByte;
 
     // Make sure to be using androidx.appcompat.app.ActionBarDrawerToggle version.
     private ActionBarDrawerToggle drawerToggle;
@@ -80,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         textViewFriend = findViewById(R.id.textFriend);
+        refreshLayout = findViewById(R.id.swipeToRefresh);
+
         carryData();
 
         SliderView sliderView = findViewById(R.id.imageSlider);
@@ -111,19 +102,12 @@ public class MainActivity extends AppCompatActivity {
                 SliderAdapter adapter = new SliderAdapter(allItems);
                 sliderView.setSliderAdapter(adapter);
 
-                /*sliderView.setIndicatorAnimation(IndicatorAnimations.WORM); //set indicator animation by using SliderLayout.IndicatorAnimations. :WORM or THIN_WORM or COLOR or DROP or FILL or NONE or SCALE or SCALE_DOWN or SLIDE and SWAP!!
-                sliderView.setSliderTransformAnimation(SliderAnimations.SIMPLETRANSFORMATION);
-                sliderView.setAutoCycleDirection(SliderView.AUTO_CYCLE_DIRECTION_BACK_AND_FORTH);
-                sliderView.setIndicatorSelectedColor(Color.WHITE);
-                sliderView.setIndicatorUnselectedColor(Color.GRAY);
-                sliderView.setScrollTimeInSec(4); //set scroll delay in seconds :
-                sliderView.startAutoCycle();*/
                 sliderView.setIndicatorAnimation(IndicatorAnimations.WORM); //set indicator animation by using SliderLayout.IndicatorAnimations. :WORM or THIN_WORM or COLOR or DROP or FILL or NONE or SCALE or SCALE_DOWN or SLIDE and SWAP!!
                 sliderView.setSliderTransformAnimation(SliderAnimations.CUBEINROTATIONTRANSFORMATION);
                 sliderView.setAutoCycleDirection(SliderView.AUTO_CYCLE_DIRECTION_BACK_AND_FORTH);
                 sliderView.setIndicatorSelectedColor(Color.BLUE);
-                sliderView.setIndicatorUnselectedColor(Color.RED);
-                sliderView.setScrollTimeInSec(4);
+                sliderView.setIndicatorUnselectedColor(Color.CYAN);
+                sliderView.setScrollTimeInSec(3);
                 sliderView.startAutoCycle();
 
                /* sliderView.setOnIndicatorClickListener(new DrawController.ClickListener() {
@@ -160,10 +144,53 @@ public class MainActivity extends AppCompatActivity {
                 userName = headerView.findViewById(R.id.user_name);
                 userName.setText(name);
 
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+                decodedByte = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
                 userImage.setImageBitmap(decodedByte);
 
                 setUpDrawerContent(nvDrawer);
+
+                refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+
+                        refreshLayout.setRefreshing(false);
+
+                        FirebaseDatabase database = FirebaseDatabase.getInstance();
+                        DatabaseReference reference = database.getReference("users");
+                        Query query = reference.orderByChild("email").equalTo(email);
+                        query.addChildEventListener(new ChildEventListener() {
+                            @Override
+                            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                                String image = String.valueOf(dataSnapshot.child("image").getValue());
+                                byte[] decodedString = Base64.decode(image, Base64.DEFAULT);
+                                decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                userImage.setImageBitmap(decodedByte);
+                            }
+
+                            @Override
+                            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                            }
+
+                            @Override
+                            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                            }
+
+                            @Override
+                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+
+                    }
+                });
 
             }
 
@@ -216,6 +243,15 @@ public class MainActivity extends AppCompatActivity {
                     cardView.setVisibility(View.GONE);
                     fragment =  FindFriendFragment.newInstance(email);
                     break;
+                case R.id.photo_change:
+                    textViewFriend.setVisibility(View.GONE);
+                    cardView.setVisibility(View.GONE);
+                    fragment = ChangePhotoFragment.newInstance(email);
+                    break;
+                case R.id.logout:
+                    Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                 default:
                     textViewFriend.setVisibility(View.GONE);
                     cardView.setVisibility(View.GONE);
