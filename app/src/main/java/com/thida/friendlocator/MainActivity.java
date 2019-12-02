@@ -1,19 +1,24 @@
 package com.thida.friendlocator;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import android.util.Base64;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
@@ -28,8 +33,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.smarteist.autoimageslider.IndicatorAnimations;
+import com.smarteist.autoimageslider.IndicatorView.draw.controller.DrawController;
+import com.smarteist.autoimageslider.SliderAnimations;
+import com.smarteist.autoimageslider.SliderView;
 import com.thida.friendlocator.ui.ChangePassword.ChangePassordFragment;
 import com.thida.friendlocator.ui.FindFriend.FindFriendFragment;
+import com.thida.friendlocator.ui.User;
 import com.thida.friendlocator.ui.home.HomeFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -41,18 +52,25 @@ import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     ImageView userImage;
     TextView userName;
     String name,email,password;
     byte[] bitmap;
+    List<SliderViewItem> allItems = new ArrayList<>();
 
-    private AppBarConfiguration mAppBarConfiguration;
+    //private AppBarConfiguration mAppBarConfiguration;
 
     private DrawerLayout mDrawer;
     private Toolbar toolbar;
     private NavigationView nvDrawer;
+    private CardView cardView;
+    private ProgressDialog dialog;
+    private TextView textViewFriend;
 
     // Make sure to be using androidx.appcompat.app.ActionBarDrawerToggle version.
     private ActionBarDrawerToggle drawerToggle;
@@ -61,35 +79,102 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-
-
+        textViewFriend = findViewById(R.id.textFriend);
         carryData();
 
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        SliderView sliderView = findViewById(R.id.imageSlider);
+        cardView = findViewById(R.id.cardView);
 
-        mDrawer = findViewById(R.id.drawer_layout);
-        nvDrawer = findViewById(R.id.nav_view);
+        dialog = new ProgressDialog(this);
+        dialog.show();
 
-        drawerToggle = setupDrawerToggle();
+        FirebaseDatabase firebaseDatabase= FirebaseDatabase.getInstance();
+        DatabaseReference ref =firebaseDatabase.getReference("users");
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dialog.dismiss();
+                for (DataSnapshot userDataSnapshot : dataSnapshot.getChildren()) {
+                    User user = userDataSnapshot.getValue(User.class);
+                    if(!user.getEmail().equals(email)) {
+                        SliderViewItem item = new SliderViewItem();
 
-        // Setup toggle to display hamburger icon with nice animation
-        drawerToggle.setDrawerIndicatorEnabled(true);
-        drawerToggle.syncState();
-        // Tie DrawerLayout events to the ActionBarToggle
-        mDrawer.addDrawerListener(drawerToggle);
+                        byte[] decodedString = Base64.decode(user.getImage(), Base64.DEFAULT);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+                        item.setImage(bitmap);
+                        item.setUserName(user.getName());
 
-        View headerView = nvDrawer.getHeaderView(0);
-        userImage = headerView.findViewById(R.id.imageView);
-        userName = headerView.findViewById(R.id.user_name);
-        userName.setText(name);
+                        allItems.add(item);
+                    }
+                }
+                SliderAdapter adapter = new SliderAdapter(allItems);
+                sliderView.setSliderAdapter(adapter);
 
-        Bitmap decodedByte = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
-        userImage.setImageBitmap(decodedByte);
+                /*sliderView.setIndicatorAnimation(IndicatorAnimations.WORM); //set indicator animation by using SliderLayout.IndicatorAnimations. :WORM or THIN_WORM or COLOR or DROP or FILL or NONE or SCALE or SCALE_DOWN or SLIDE and SWAP!!
+                sliderView.setSliderTransformAnimation(SliderAnimations.SIMPLETRANSFORMATION);
+                sliderView.setAutoCycleDirection(SliderView.AUTO_CYCLE_DIRECTION_BACK_AND_FORTH);
+                sliderView.setIndicatorSelectedColor(Color.WHITE);
+                sliderView.setIndicatorUnselectedColor(Color.GRAY);
+                sliderView.setScrollTimeInSec(4); //set scroll delay in seconds :
+                sliderView.startAutoCycle();*/
+                sliderView.setIndicatorAnimation(IndicatorAnimations.WORM); //set indicator animation by using SliderLayout.IndicatorAnimations. :WORM or THIN_WORM or COLOR or DROP or FILL or NONE or SCALE or SCALE_DOWN or SLIDE and SWAP!!
+                sliderView.setSliderTransformAnimation(SliderAnimations.CUBEINROTATIONTRANSFORMATION);
+                sliderView.setAutoCycleDirection(SliderView.AUTO_CYCLE_DIRECTION_BACK_AND_FORTH);
+                sliderView.setIndicatorSelectedColor(Color.BLUE);
+                sliderView.setIndicatorUnselectedColor(Color.RED);
+                sliderView.setScrollTimeInSec(4);
+                sliderView.startAutoCycle();
+
+               /* sliderView.setOnIndicatorClickListener(new DrawController.ClickListener() {
+                    @Override
+                    public void onIndicatorClicked(int position) {
+                        sliderView.setCurrentPagePosition(position);
+                    }
+                });*/
+
+
+
+                /*for navigation drawer*/
+
+                toolbar = findViewById(R.id.toolbar);
+                setSupportActionBar(toolbar);
+                //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+                mDrawer = findViewById(R.id.drawer_layout);
+                nvDrawer = findViewById(R.id.nav_view);
+
+                drawerToggle = setupDrawerToggle();
+
+                // Setup toggle to display hamburger icon with nice animation
+                drawerToggle.setDrawerIndicatorEnabled(true);
+                drawerToggle.syncState();
+                // Tie DrawerLayout events to the ActionBarToggle
+                mDrawer.addDrawerListener(drawerToggle);
+
+                // Passing each menu ID as a set of Ids because each
+                // menu should be considered as top level destinations.
+
+                View headerView = nvDrawer.getHeaderView(0);
+                userImage = headerView.findViewById(R.id.imageView);
+                userName = headerView.findViewById(R.id.user_name);
+                userName.setText(name);
+
+                Bitmap decodedByte = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+                userImage.setImageBitmap(decodedByte);
+
+                setUpDrawerContent(nvDrawer);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
 
 
 
@@ -101,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);*/
 
-        setUpDrawerContent(nvDrawer);
+
 
     }
 
@@ -122,13 +207,19 @@ public class MainActivity extends AppCompatActivity {
         try {
             switch (menuItem.getItemId()) {
                 case R.id.pwd_change:
+                    textViewFriend.setVisibility(View.GONE);
+                    cardView.setVisibility(View.GONE);
                     fragmentClass = ChangePassordFragment.class;
                     fragment = (Fragment) fragmentClass.newInstance();
                     break;
                 case R.id.find_friends:
+                    textViewFriend.setVisibility(View.GONE);
+                    cardView.setVisibility(View.GONE);
                     fragment =  FindFriendFragment.newInstance(email);
                     break;
                 default:
+                    textViewFriend.setVisibility(View.GONE);
+                    cardView.setVisibility(View.GONE);
                     fragmentClass = HomeFragment.class;
                     fragment = (Fragment) fragmentClass.newInstance();
 
