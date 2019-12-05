@@ -32,6 +32,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -178,7 +180,10 @@ public class MainActivity extends AppCompatActivity {
                     fragment = ChangePassordFragment.newInstance(email,password);
                     break;
                 case R.id.find_friends:
-                    fragment =  FindFriendFragment.newInstance(email);
+                    CheckConnection connection = new CheckConnection(MainActivity.this);
+                    boolean checkGPS = connection.checkGPS();
+                    if(checkGPS) fragment =  FindFriendFragment.newInstance(email);
+                    else Toast.makeText(getApplicationContext(),"GPS is disabled in your device.",Toast.LENGTH_LONG).show();
                     break;
                 case R.id.photo_change:
                     fragment = ChangePhotoFragment.newInstance(email);
@@ -193,16 +198,17 @@ public class MainActivity extends AppCompatActivity {
        catch (Exception e) {
             e.printStackTrace();
         }
+        if(fragment!=null) {
+            // Insert the fragment by replacing any existing fragment
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
 
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
-
-        // Highlight the selected item has been done by NavigationView
-        menuItem.setChecked(true);
-        // Set action bar title
-        setTitle(menuItem.getTitle());
-        mDrawer.closeDrawers();
+            // Highlight the selected item has been done by NavigationView
+            menuItem.setChecked(true);
+            // Set action bar title
+            setTitle(menuItem.getTitle());
+            mDrawer.closeDrawers();
+        }
     }
 
     @Override

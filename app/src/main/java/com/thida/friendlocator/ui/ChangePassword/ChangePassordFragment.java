@@ -130,7 +130,7 @@ public class ChangePassordFragment extends Fragment {
                         }
                         else {
                             dialog.dismiss();
-                            Toast.makeText(getContext(),"Authentication fail",Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(),"Authentication fail!\n Check your internet connection.",Toast.LENGTH_LONG).show();
                         }
                     }
                 });
