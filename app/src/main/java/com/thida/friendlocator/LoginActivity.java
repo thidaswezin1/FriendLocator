@@ -1,6 +1,7 @@
 package com.thida.friendlocator;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -103,6 +104,9 @@ public class LoginActivity extends AppCompatActivity {
                                public void onComplete(@NonNull Task<AuthResult> task) {
 
                                    if (!task.isSuccessful()) {
+                                       email.setEnabled(true);
+                                       password.setEnabled(true);
+                                       btnLogin.setEnabled(true);
                                        progressBar.setVisibility(View.GONE);
                                        Toast.makeText(LoginActivity.this, "Login Fail!\nCheck your email or password", Toast.LENGTH_LONG).show();
                                    } else {
@@ -113,8 +117,13 @@ public class LoginActivity extends AppCompatActivity {
                            });
 
                }
-               else Toast.makeText(this,"Location data is not available.\nPlease wait and LOGIN again",Toast.LENGTH_LONG).show();
-
+               else {
+                   email.setEnabled(true);
+                   password.setEnabled(true);
+                   btnLogin.setEnabled(true);
+                   progressBar.setVisibility(View.GONE);
+                   Toast.makeText(this, "Location data is not available now.\nPlease wait and LOGIN again.", Toast.LENGTH_LONG).show();
+               }
         }}
 
         );
@@ -191,6 +200,16 @@ public class LoginActivity extends AppCompatActivity {
         if(location.canGetLocation) {
             latitude = String.valueOf(location.getLatitude());
             longitude = String.valueOf(location.getLongitude());
+        }
+        else {
+            new AlertDialog.Builder(this)
+                    .setMessage("GPS is disable in your device")
+                    .setPositiveButton("Go to GPS Setting", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }
+                    });
         }
 
     }

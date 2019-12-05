@@ -1,5 +1,6 @@
 package com.thida.friendlocator;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -84,6 +85,7 @@ public class SignUpActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         btn_signup.setOnClickListener(view -> {
+            getLocation();
                 if(!isNotEmpty(name.getText().toString())){
                     name.setError("Invalid Name!");
                 }
@@ -99,30 +101,36 @@ public class SignUpActivity extends AppCompatActivity {
                 else if(password.getText().toString().length()<6){
                     Snackbar.make(layout,"Passwords must be more than 6 characters!",Snackbar.LENGTH_LONG).show();
                 }
-                else{
-                    disableView();
-                    progressBar.setVisibility(View.VISIBLE);
-                    firebaseAuth.createUserWithEmailAndPassword(email.getText().toString(),password.getText().toString())
-                            .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    progressBar.setVisibility(View.GONE);
-                                    if(!task.isSuccessful()){
-                                        Toast.makeText(SignUpActivity.this, "Authentication failed." + task.getException(),
-                                                Toast.LENGTH_LONG).show();
-                                    }
-                                    else{
-                                        Log.e("task is successful","hello");
-                                        createUserinDB();
-                                        Intent intent = new Intent(SignUpActivity.this,LoginActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                        startActivity(intent);
-                                        //finish();
+                else {
+                    if (!latitude.equals("0.0") || !longitude.equals("0.0")) {
+                        disableView();
+                        progressBar.setVisibility(View.VISIBLE);
+                        firebaseAuth.createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString())
+                                .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        progressBar.setVisibility(View.GONE);
+                                        if (!task.isSuccessful()) {
+                                            Toast.makeText(SignUpActivity.this, "Authentication failed." + task.getException(),
+                                                    Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Log.e("task is successful", "hello");
+                                            createUserinDB();
+                                            Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
+                                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                            startActivity(intent);
+                                            //finish();
+
+                                        }
 
                                     }
+                                });
+                    }
+                    else {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this,"Location data is not available now.\nPlease wait and SignUp again.",Toast.LENGTH_LONG).show();
+                    }
 
-                                }
-                            });
                 }
 
         });
@@ -178,15 +186,26 @@ public class SignUpActivity extends AppCompatActivity {
         }
         return false;
     }
-
-    private void createUserinDB() {
+    private void getLocation(){
         //get current location with GPS
         GetCurrentLocation location = new GetCurrentLocation(this);
         if (location.canGetLocation) {
             latitude = String.valueOf(location.getLatitude());
             longitude = String.valueOf(location.getLongitude());
+        }
+        else {
+            new AlertDialog.Builder(this)
+                    .setMessage("GPS is disable in your device")
+                    .setPositiveButton("Go to GPS Setting", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }
+                    });
+        }
+    }
 
-
+    private void createUserinDB() {
             //covert image to Base 64
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             BitmapDrawable imagedrawable = (BitmapDrawable) image.getDrawable();
@@ -219,11 +238,7 @@ public class SignUpActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         },2000);*/
-        }
-        else {
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
-        }
+
     }
 
     private void disableView(){
