@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -189,6 +191,10 @@ public class MainActivity extends AppCompatActivity {
                     fragment = ChangePhotoFragment.newInstance(email);
                     break;
                 case R.id.logout:
+                    Log.e("current user " ,FirebaseAuth.getInstance().getCurrentUser()+"");
+                    if(FirebaseAuth.getInstance().getCurrentUser()!=null)
+                        FirebaseAuth.getInstance().signOut();
+
                     Intent intent = new Intent(MainActivity.this,LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);

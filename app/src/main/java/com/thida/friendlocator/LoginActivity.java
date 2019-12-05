@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -43,6 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     AlertDialog dialog1;
     CheckConnection check;
 
+    FirebaseAuth auth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         dialog1 = new AlertDialog.Builder(this).create();
         check = new CheckConnection(LoginActivity.this);
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth = FirebaseAuth.getInstance();
         btnLogin.setOnClickListener(view -> {
            /* if(!haveNetworkConnection()){
                 //Toast.makeText(getApplicationContext(),"Internet Connection is required.",Toast.LENGTH_LONG).show();
