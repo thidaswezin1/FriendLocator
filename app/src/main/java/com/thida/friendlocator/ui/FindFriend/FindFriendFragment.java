@@ -47,8 +47,8 @@ public class FindFriendFragment extends Fragment {
         mapFragment.getMapAsync(googleMap -> {
             mMap = googleMap;
             // mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            //mMap.setMyLocationEnabled(true);
-            //mMap.getUiSettings().setMyLocationButtonEnabled(true);
+            mMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setMyLocationButtonEnabled(true);
             mMap.getUiSettings().setZoomControlsEnabled(true);
             mMap.getUiSettings().setMapToolbarEnabled(true);
             mMap.getUiSettings().setRotateGesturesEnabled(true);
@@ -74,15 +74,16 @@ public class FindFriendFragment extends Fragment {
                     if(user.getEmail().equals(email)){
 
                         LatLng location = new LatLng(Double.parseDouble(user.getLatitude()),Double.parseDouble(user.getLongitude()));
-                        mMap.addMarker(new MarkerOptions().position(location).title("Me"));
+                        //mMap.addMarker(new MarkerOptions().position(location).title("Me"));
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
                     }
-                    else {
+                   else {
 
                         LatLng location = new LatLng(Double.parseDouble(user.getLatitude()), Double.parseDouble(user.getLongitude()));
                         mMap.addMarker(new MarkerOptions().position(location).title(user.getName() + " is here!").icon(BitmapDescriptorFactory.fromResource(R.drawable.person)));
 
                     }
+
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
             }
@@ -92,11 +93,6 @@ public class FindFriendFragment extends Fragment {
 
             }
         });
-
-
-
-
-
 
         return root;
     }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -16,7 +17,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -25,9 +25,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
@@ -36,15 +36,26 @@ public class LoginActivity extends AppCompatActivity {
     View emailView,passwordView,layout;
     ProgressBar progressBar;
     String latitude,longitude,image,name;
+    Handler handler = new Handler();
+    Runnable runnable;
+    int delay = 3*1000;
+    AlertDialog dialog;
+    AlertDialog dialog1;
+    CheckConnection check;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         initialize();
+
+        dialog = new AlertDialog.Builder(this).create();
+        dialog1 = new AlertDialog.Builder(this).create();
+        check = new CheckConnection(LoginActivity.this);
+
         FirebaseAuth auth = FirebaseAuth.getInstance();
         btnLogin.setOnClickListener(view -> {
-            if(!haveNetworkConnection()){
+           /* if(!haveNetworkConnection()){
                 //Toast.makeText(getApplicationContext(),"Internet Connection is required.",Toast.LENGTH_LONG).show();
                 Snackbar.make(layout,"Internet Connection is required.",Snackbar.LENGTH_LONG)
                         .setAction("OK", new View.OnClickListener() {
@@ -54,8 +65,8 @@ public class LoginActivity extends AppCompatActivity {
                                 startActivity(intent);
                             }
                         }).show();
-            }
-            else{
+            }*/
+
            /* FirebaseDatabase firebaseDatabase= FirebaseDatabase.getInstance();
             DatabaseReference ref =firebaseDatabase.getReference("users");
 
@@ -98,25 +109,8 @@ public class LoginActivity extends AppCompatActivity {
 
            }
 
-        }});
+        });
 
-    }
-
-    private boolean haveNetworkConnection() {
-        boolean haveConnectedWifi = false;
-        boolean haveConnectedMobile = false;
-
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo[] netInfo = cm.getAllNetworkInfo();
-        for (NetworkInfo ni : netInfo) {
-            if (ni.getTypeName().equalsIgnoreCase("WIFI"))
-                if (ni.isConnected())
-                    haveConnectedWifi = true;
-            if (ni.getTypeName().equalsIgnoreCase("MOBILE"))
-                if (ni.isConnected())
-                    haveConnectedMobile = true;
-        }
-        return haveConnectedWifi || haveConnectedMobile;
     }
 
     private void initialize(){
@@ -190,6 +184,52 @@ public class LoginActivity extends AppCompatActivity {
             latitude = String.valueOf(location.getLatitude());
             longitude = String.valueOf(location.getLongitude());
         }
+    }
+
+    @Override
+    protected void onResume() {
+
+        handler.postDelayed( runnable = new Runnable() {
+            public void run() {
+                boolean checkConnection = check.checkNetworkConnection();
+                if(!checkConnection){
+                    if(!dialog.isShowing()) {
+                        Log.e("Dialog ", "is showing");
+                        dialog.setMessage("Internet Connection is not available.");
+                        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Go to Internet Setting", (dialogInterface, i) -> {
+                            dialog.dismiss();
+                            startActivity(new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS));
+
+                        });
+                        dialog.show();
+                    }
+                }
+
+                Boolean checkGPS = check.checkGPS();
+                if(!checkGPS){
+                    if(!dialog1.isShowing()) {
+                        Log.e("Dialog1 ", "is showing");
+                        dialog1.setMessage("GPS is disabled in your device.");
+                        dialog1.setButton(AlertDialog.BUTTON_POSITIVE, "Go to GPS Setting", (dialogInterface, i) -> {
+                            dialog1.dismiss();
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+
+                        });
+                        dialog1.show();
+                    }
+                }
+
+                handler.postDelayed(runnable, delay);
+            }
+        }, delay);
+
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause(){
+        handler.removeCallbacks(runnable); //stop handler when activity not visible
+        super.onPause();
     }
 
 }

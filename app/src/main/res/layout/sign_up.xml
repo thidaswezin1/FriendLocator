@@ -18,11 +18,11 @@
         android:layout_width="110dp"
         android:layout_height="110dp"
         android:layout_marginTop="50dp"
-        app:civ_border_width="2dp"
+        app:civ_border_width="1dp"
         app:civ_border_color="#000000"
         android:contextClickable="true"
         android:visibility="visible"
-        android:src="@drawable/ic_account_circle_black_24dp" />
+        android:src="@drawable/user" />
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/name_view"
         android:layout_width="match_parent"
