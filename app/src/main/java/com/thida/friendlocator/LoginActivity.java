@@ -88,28 +88,33 @@ public class LoginActivity extends AppCompatActivity {
                password.setError("Invalid Password!");
            }
            else {
-               progressBar.setVisibility(View.VISIBLE);
-               email.setEnabled(false);
-               password.setEnabled(false);
-               btnLogin.setEnabled(false);
-               auth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString())
-                       .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                           @Override
-                           public void onComplete(@NonNull Task<AuthResult> task) {
+               getLocation();
+               if(!latitude.equals("0.0") || !longitude.equals("0.0")){
+                   progressBar.setVisibility(View.VISIBLE);
+                   email.setEnabled(false);
+                   password.setEnabled(false);
+                   btnLogin.setEnabled(false);
+                   auth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString())
+                           .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                               @Override
+                               public void onComplete(@NonNull Task<AuthResult> task) {
 
-                               if (!task.isSuccessful()) {
-                                   progressBar.setVisibility(View.GONE);
-                                   Toast.makeText(LoginActivity.this, "Login Fail!\nCheck your email or password", Toast.LENGTH_LONG).show();
-                               } else {
-                                   updateData();
+                                   if (!task.isSuccessful()) {
+                                       progressBar.setVisibility(View.GONE);
+                                       Toast.makeText(LoginActivity.this, "Login Fail!\nCheck your email or password", Toast.LENGTH_LONG).show();
+                                   } else {
+                                       updateData();
 
+                                   }
                                }
-                           }
-                       });
+                           });
 
-           }
+               }
+               else Toast.makeText(this,"Location data is not available.\nPlease wait and LOGIN again",Toast.LENGTH_LONG).show();
 
-        });
+        }}
+
+        );
 
     }
 
@@ -132,7 +137,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 progressBar.setVisibility(View.GONE);
-               getLocation();
+
                dataSnapshot.getRef().child("latitude").setValue(latitude);
                dataSnapshot.getRef().child("longitude").setValue(longitude);
                name = String.valueOf(dataSnapshot.child("name").getValue());
@@ -184,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
             latitude = String.valueOf(location.getLatitude());
             longitude = String.valueOf(location.getLongitude());
         }
+
     }
 
     @Override
