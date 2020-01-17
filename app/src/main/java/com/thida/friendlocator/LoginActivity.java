@@ -1,5 +1,6 @@
 package com.thida.friendlocator;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,9 +13,12 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -260,4 +264,46 @@ public class LoginActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    public String success(String userName,String upassword){
+        if("hla@gmail.com".equals(userName) && "1234567".equals(upassword))
+            return "Login is successful";
+        return "Login is fail";
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.Theme_AppCompat_DayNight_Dialog_Alert);
+        builder.setTitle("Exit?");
+        builder.setMessage("Do you want to exit?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        Button button1 = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(20, 0, 30, 0);
+        button1.setLayoutParams(params);
+       // button1.setPadding(20,20,20,20);
+       // button1.setL();
+        //button1.setGravity(Gravity.CENTER_HORIZONTAL);
+    }
 }
+

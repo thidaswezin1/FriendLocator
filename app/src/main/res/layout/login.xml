@@ -17,7 +17,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox" >
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email"
             android:layout_width="match_parent"
@@ -50,6 +49,8 @@
         android:layout_marginTop="40dp"
         android:background="@color/colorPrimary"
         android:textColor="#ffffff"/>
-
+<!--    <com.google.android.gms.common.SignInButton-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"/>-->
 
 </LinearLayout>

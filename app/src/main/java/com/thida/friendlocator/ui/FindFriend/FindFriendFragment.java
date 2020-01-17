@@ -8,8 +8,10 @@ import android.view.ViewGroup;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -80,9 +82,17 @@ public class FindFriendFragment extends Fragment {
                    else {
 
                         LatLng location = new LatLng(Double.parseDouble(user.getLatitude()), Double.parseDouble(user.getLongitude()));
-                        mMap.addMarker(new MarkerOptions().position(location).title(user.getName() + " is here!").icon(BitmapDescriptorFactory.fromResource(R.drawable.person)));
+                        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromResource(R.drawable.person);
+                        mMap.addMarker(new MarkerOptions().position(location).title(user.getName() + " is here!").icon(descriptor));
 
                     }
+                   mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                       @Override
+                       public boolean onMarkerClick(Marker marker) {
+
+                           return false;
+                       }
+                   });
 
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
